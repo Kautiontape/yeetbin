@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    container_name: yeetbin
+    ports:
+      - "127.0.0.1:8108:3000"
+    volumes:
+      - yeetbin_data:/data
+    environment:
+      - DATABASE_URL=/data/yeetbin.db
+    restart: always
+
+volumes:
+  yeetbin_data:
