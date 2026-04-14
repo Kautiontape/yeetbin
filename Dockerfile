@@ -8,7 +8,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm build
+RUN mkdir -p /data && pnpm build
 
 # ---
 
@@ -23,10 +23,14 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 
+RUN mkdir -p /data
+
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV DATABASE_URL=/data/yeetbin.db
 
 EXPOSE 3000
 
-CMD ["node", "build/index.js"]
+COPY --from=builder /app/scripts ./scripts
+
+CMD ["sh", "-c", "node scripts/init-db.js && node build/index.js"]

@@ -1,3 +1,7 @@
-import { startExpiryCleanup } from '$lib/server/expiry';
+import { building } from '$app/environment';
 
-startExpiryCleanup();
+if (!building) {
+	import('$lib/server/expiry').then(({ startExpiryCleanup }) => {
+		startExpiryCleanup();
+	});
+}
