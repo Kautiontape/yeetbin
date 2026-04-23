@@ -6,6 +6,7 @@
 	import { oneDark } from '@codemirror/theme-one-dark';
 	import { theme } from '$lib/stores/theme';
 	import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
+	import { pasteMarkdownExtension } from '$lib/extensions/paste-markdown';
 
 	interface Props {
 		content?: string;
@@ -15,7 +16,7 @@
 		/** Content type: 'markdown' | 'code' | 'mermaid' | 'text' */
 		type?: string;
 		/** Language for code type: 'javascript' | 'python' | etc. */
-		language?: string;
+		language?: string | null;
 	}
 
 	let {
@@ -95,6 +96,10 @@
 			extensions.push(langExtension);
 		}
 
+		if (type === 'markdown') {
+			extensions.push(pasteMarkdownExtension());
+		}
+
 		if (currentTheme === 'dark') {
 			extensions.push(oneDark);
 		}
@@ -145,7 +150,7 @@
 	});
 </script>
 
-<div bind:this={container} class="code-editor h-full overflow-auto"></div>
+<div bind:this={container} class="code-editor relative h-full overflow-auto"></div>
 
 <style>
 	.code-editor :global(.cm-editor) {
@@ -157,5 +162,27 @@
 	}
 	.code-editor :global(.cm-scroller) {
 		overflow: auto;
+	}
+	.code-editor :global(.yb-paste-hint) {
+		position: absolute;
+		bottom: 0.75rem;
+		left: 50%;
+		transform: translateX(-50%);
+		background: var(--color-gray-800, #1f2937);
+		color: var(--color-gray-100, #f3f4f6);
+		font-size: 0.8rem;
+		padding: 0.4rem 0.85rem;
+		border-radius: 0.375rem;
+		opacity: 0;
+		animation: yb-hint-fade 10s ease-in-out forwards;
+		pointer-events: none;
+		z-index: 10;
+		white-space: nowrap;
+	}
+	@keyframes yb-hint-fade {
+		0% { opacity: 0; transform: translateX(-50%) translateY(4px); }
+		5% { opacity: 1; transform: translateX(-50%) translateY(0); }
+		85% { opacity: 1; }
+		100% { opacity: 0; }
 	}
 </style>

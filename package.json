@@ -50,11 +50,14 @@
 		"shiki": "^4.0.2",
 		"svelte": "^5.55.3",
 		"tailwindcss": "^4.2.2",
+		"turndown": "^7.2.4",
+		"turndown-plugin-gfm": "^1.0.2",
 		"vite": "^8.0.8"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/markdown-it": "^14.1.2",
+		"@types/turndown": "^5.0.6",
 		"drizzle-kit": "^0.31.10",
 		"svelte-check": "^4.4.6",
 		"typescript": "^6.0.2"
