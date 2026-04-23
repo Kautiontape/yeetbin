@@ -521,6 +521,20 @@ details.yb-callout[open] summary::after {
 	color: #9ca3af;
 }
 
+/* Print-only container: visually hidden on screen */
+.yb-print-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+
+.yb-print-section-label {
+	display: none;
+}
+
 /* Print stylesheet */
 @media print {
 	/* Hide chrome */
@@ -652,5 +666,55 @@ details.yb-callout[open] summary::after {
 
 	td {
 		border-bottom-color: #e5e7eb !important;
+	}
+
+	/* Print-only container: make visible */
+	.yb-print-only {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		overflow: visible !important;
+		clip: auto !important;
+		white-space: normal !important;
+	}
+
+	/* Rendered only: hide source */
+	[data-print-mode='rendered'] .yb-print-source {
+		display: none !important;
+	}
+
+	/* Source only: hide rendered */
+	[data-print-mode='source'] .yb-print-rendered {
+		display: none !important;
+	}
+
+	/* Both (source first): reorder with flex */
+	[data-print-mode='both-source'] .yb-print-only {
+		display: flex !important;
+		flex-direction: column;
+	}
+	[data-print-mode='both-source'] .yb-print-source {
+		order: -1;
+	}
+
+	/* Section labels: visible only in "both" modes */
+	[data-print-mode='both-rendered'] .yb-print-section-label,
+	[data-print-mode='both-source'] .yb-print-section-label {
+		display: block !important;
+		font-size: 0.75rem;
+		color: #6b7280;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin: 0 auto;
+		max-width: 48rem;
+		padding: 0 1.5rem;
+	}
+
+	/* Separator between sections in "both" modes */
+	[data-print-mode='both-rendered'] .yb-print-source,
+	[data-print-mode='both-source'] .yb-print-rendered {
+		border-top: 1px solid #d1d5db;
+		margin-top: 2em;
+		padding-top: 1em;
 	}
 }

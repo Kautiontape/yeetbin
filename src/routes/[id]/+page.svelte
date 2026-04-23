@@ -6,6 +6,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import ContentPreview from '$lib/components/ContentPreview.svelte';
 	import CopyButton from '$lib/components/CopyButton.svelte';
+	import PrintButton from '$lib/components/PrintButton.svelte';
 	import { decrypt } from '$lib/utils/crypto';
 	import { renderMarkdown } from '$lib/content-types/markdown/client-render';
 	import type { PageData } from './$types';
@@ -251,12 +252,7 @@
 					</a>
 				{/if}
 				<CopyButton options={copyOptions} />
-				<button
-					onclick={() => window.print()}
-					class="text-sm px-3 py-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-				>
-					Print
-				</button>
+				<PrintButton />
 			</div>
 		</div>
 
@@ -273,7 +269,7 @@
 				<p class="text-neutral-500">Decrypting...</p>
 			</div>
 		{:else if viewMode === 'split'}
-			<div class="yb-split-container flex-1 flex overflow-hidden">
+			<div class="yb-split-container yb-print-hide flex-1 flex overflow-hidden">
 				<div class="yb-split-pane flex-1 min-w-0 overflow-auto border-r border-neutral-200 dark:border-neutral-700">
 					<div class="px-6 py-8">
 						<pre class="yb-source text-sm font-mono whitespace-pre-wrap break-words">{displayContent}</pre>
@@ -286,15 +282,33 @@
 				</div>
 			</div>
 		{:else if viewMode === 'source'}
-			<div class="flex-1 overflow-auto">
+			<div class="yb-print-hide flex-1 overflow-auto">
 				<div class="max-w-3xl mx-auto px-6 py-8">
 					<pre class="yb-source text-sm font-mono whitespace-pre-wrap break-words">{displayContent}</pre>
 				</div>
 			</div>
 		{:else}
-			<div class="flex-1 overflow-auto">
+			<div class="yb-print-hide flex-1 overflow-auto">
 				<div bind:this={contentEl} class="max-w-3xl mx-auto px-6 py-8">
 					{#if displayContent}<ContentPreview content={displayContent} type={data.bin.type} language={data.bin.language} renderedHtml={displayHtml} />{/if}
+				</div>
+			</div>
+		{/if}
+
+		<!-- Print-only container (hidden on screen, shown during print) -->
+		{#if displayContent}
+			<div class="yb-print-only">
+				<div class="yb-print-rendered">
+					<p class="yb-print-section-label">Rendered</p>
+					<div class="max-w-3xl mx-auto px-6 py-8">
+						<ContentPreview content={displayContent} type={data.bin.type} language={data.bin.language} renderedHtml={displayHtml} />
+					</div>
+				</div>
+				<div class="yb-print-source">
+					<p class="yb-print-section-label">Source</p>
+					<div class="max-w-3xl mx-auto px-6 py-8">
+						<pre class="yb-source text-sm font-mono whitespace-pre-wrap break-words">{displayContent}</pre>
+					</div>
 				</div>
 			</div>
 		{/if}
