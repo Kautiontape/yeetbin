@@ -3,6 +3,8 @@
 	import Header from '$lib/components/Header.svelte';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
 	import ContentPreview from '$lib/components/ContentPreview.svelte';
+	import CopyButton from '$lib/components/CopyButton.svelte';
+	import PrintButton from '$lib/components/PrintButton.svelte';
 	import { defaultEditMode } from '$lib/utils/responsive';
 	import type { PageData } from './$types';
 
@@ -12,6 +14,13 @@
 	let viewMode = $state<'edit' | 'preview' | 'split'>(defaultEditMode());
 
 	let dirty = $derived(content !== data.bin.content);
+
+	let copyOptions = $derived([
+		{
+			label: 'Copy Source',
+			action: () => { if (content) navigator.clipboard.writeText(content); }
+		}
+	]);
 </script>
 
 <svelte:window
@@ -31,7 +40,7 @@
 
 	<div class="flex-1 flex flex-col overflow-hidden">
 		<div
-			class="flex items-center gap-2 px-4 py-2 border-b border-neutral-200 dark:border-neutral-700"
+			class="yb-print-hide flex flex-wrap items-center gap-2 px-4 py-2 border-b border-neutral-200 dark:border-neutral-700"
 		>
 			<span class="text-sm text-neutral-500">Editing <a href="/{data.bin.id}" class="underline"><code>{data.bin.id}</code></a></span>
 			<div class="flex items-center gap-1 ml-4">
@@ -46,9 +55,16 @@
 					</button>
 				{/each}
 			</div>
+
+			<div class="h-4 w-px bg-neutral-200 dark:bg-neutral-800 hidden sm:block"></div>
+
+			<div class="flex items-center gap-1">
+				<CopyButton options={copyOptions} />
+				<PrintButton />
+			</div>
 		</div>
 
-		<div class="flex-1 overflow-hidden {viewMode === 'split' ? 'yb-split-container flex' : ''}">
+		<div class="yb-print-hide flex-1 overflow-hidden {viewMode === 'split' ? 'yb-split-container flex' : ''}">
 			{#if viewMode === 'edit'}
 				<CodeEditor {content} onchange={(v) => (content = v)} type={data.bin.type} language={data.bin.language} />
 			{:else if viewMode === 'preview'}
@@ -68,6 +84,23 @@
 				</div>
 			{/if}
 		</div>
+
+		{#if content}
+			<div class="yb-print-only">
+				<div class="yb-print-rendered">
+					<p class="yb-print-section-label">Rendered</p>
+					<div class="max-w-3xl mx-auto px-6 py-8">
+						<ContentPreview {content} type={data.bin.type} language={data.bin.language} />
+					</div>
+				</div>
+				<div class="yb-print-source">
+					<p class="yb-print-section-label">Source</p>
+					<div class="max-w-3xl mx-auto px-6 py-8">
+						<pre class="yb-source text-sm font-mono whitespace-pre-wrap break-words">{content}</pre>
+					</div>
+				</div>
+			</div>
+		{/if}
 	</div>
 
 	<form

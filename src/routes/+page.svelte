@@ -3,6 +3,8 @@
 	import Header from '$lib/components/Header.svelte';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
 	import ContentPreview from '$lib/components/ContentPreview.svelte';
+	import CopyButton from '$lib/components/CopyButton.svelte';
+	import PrintButton from '$lib/components/PrintButton.svelte';
 	import { encrypt } from '$lib/utils/crypto';
 	import { defaultEditMode } from '$lib/utils/responsive';
 
@@ -18,6 +20,13 @@
 	let encrypted = $state(false);
 	let publishing = $state(false);
 	let error = $state('');
+
+	let copyOptions = $derived([
+		{
+			label: 'Copy Source',
+			action: () => { if (content) navigator.clipboard.writeText(content); }
+		}
+	]);
 
 	// Encrypted bins must be read-only
 	$effect(() => {
@@ -104,21 +113,30 @@
 
 	<div class="flex-1 flex flex-col overflow-hidden">
 		<div
-			class="flex items-center gap-1 px-4 py-2 border-b border-neutral-200 dark:border-neutral-700"
+			class="yb-print-hide flex flex-wrap items-center gap-2 px-4 py-2 border-b border-neutral-200 dark:border-neutral-700"
 		>
-			{#each ['edit', 'preview', 'split'] as mode}
-				<button
-					onclick={() => (viewMode = mode as typeof viewMode)}
-					class="text-sm px-3 py-1 rounded-md transition-colors {viewMode === mode
-						? 'bg-neutral-200 dark:bg-neutral-800 font-medium'
-						: 'hover:bg-neutral-100 dark:hover:bg-neutral-800/50'}"
-				>
-					{mode.charAt(0).toUpperCase() + mode.slice(1)}
-				</button>
-			{/each}
+			<div class="flex items-center gap-1">
+				{#each ['edit', 'preview', 'split'] as mode}
+					<button
+						onclick={() => (viewMode = mode as typeof viewMode)}
+						class="text-sm px-3 py-1 rounded-md transition-colors {viewMode === mode
+							? 'bg-neutral-200 dark:bg-neutral-800 font-medium'
+							: 'hover:bg-neutral-100 dark:hover:bg-neutral-800/50'}"
+					>
+						{mode.charAt(0).toUpperCase() + mode.slice(1)}
+					</button>
+				{/each}
+			</div>
+
+			<div class="h-4 w-px bg-neutral-200 dark:bg-neutral-800 hidden sm:block"></div>
+
+			<div class="flex items-center gap-1">
+				<CopyButton options={copyOptions} />
+				<PrintButton />
+			</div>
 		</div>
 
-		<div class="flex-1 overflow-hidden {viewMode === 'split' ? 'yb-split-container flex' : ''}">
+		<div class="yb-print-hide flex-1 overflow-hidden {viewMode === 'split' ? 'yb-split-container flex' : ''}">
 			{#if viewMode === 'edit'}
 				<CodeEditor
 					{content}
@@ -148,6 +166,23 @@
 				</div>
 			{/if}
 		</div>
+
+		{#if content}
+			<div class="yb-print-only">
+				<div class="yb-print-rendered">
+					<p class="yb-print-section-label">Rendered</p>
+					<div class="max-w-3xl mx-auto px-6 py-8">
+						<ContentPreview {content} type={selectedType} language={selectedLanguage} />
+					</div>
+				</div>
+				<div class="yb-print-source">
+					<p class="yb-print-section-label">Source</p>
+					<div class="max-w-3xl mx-auto px-6 py-8">
+						<pre class="yb-source text-sm font-mono whitespace-pre-wrap break-words">{content}</pre>
+					</div>
+				</div>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Publish bar -->
