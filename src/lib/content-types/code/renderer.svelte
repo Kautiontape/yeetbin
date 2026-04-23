@@ -4,8 +4,8 @@
 
 	interface Props {
 		content: string;
-		renderedHtml?: string;
-		language?: string;
+		renderedHtml?: string | null;
+		language?: string | null;
 	}
 
 	let { content, renderedHtml, language = 'text' }: Props = $props();

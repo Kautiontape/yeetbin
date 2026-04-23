@@ -44,7 +44,7 @@ export async function decrypt(ciphertext: string, keyStr: string): Promise<strin
 	const encrypted = data.slice(IV_LENGTH);
 
 	const keyData = fromBase64url(keyStr);
-	const key = await crypto.subtle.importKey('raw', keyData, { name: ALGO, length: KEY_LENGTH }, false, [
+	const key = await crypto.subtle.importKey('raw', keyData as BufferSource, { name: ALGO, length: KEY_LENGTH }, false, [
 		'decrypt'
 	]);
 
