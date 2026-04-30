@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { enhance } from '$app/forms';
 	import Header from '$lib/components/Header.svelte';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
@@ -10,7 +11,7 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let content = $state(data.bin.content);
+	let content = $state(untrack(() => data.bin.content));
 	let viewMode = $state<'edit' | 'preview' | 'split'>(defaultEditMode());
 
 	let dirty = $derived(content !== data.bin.content);

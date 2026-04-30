@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { enhance } from '$app/forms';
 	import Header from '$lib/components/Header.svelte';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
@@ -8,8 +9,8 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let content = $state(data.parent.content);
-	let selectedType = $state(data.parent.type);
+	let content = $state(untrack(() => data.parent.content));
+	let selectedType = $state(untrack(() => data.parent.type));
 	let viewMode = $state<'edit' | 'preview' | 'split'>(defaultEditMode());
 
 	let dirty = $derived(content !== data.parent.content);

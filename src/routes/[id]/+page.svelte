@@ -13,7 +13,8 @@
 
 	let { data, form }: { data: PageData; form: any } = $props();
 	let viewMode = $state<'rendered' | 'source' | 'split'>('rendered');
-	let contentEl: HTMLDivElement;
+	let contentEl = $state<HTMLDivElement | undefined>();
+	let passwordInputEl: HTMLInputElement | undefined = $state();
 
 	// Encryption state
 	let decryptedContent = $state<string | null>(null);
@@ -25,6 +26,10 @@
 		if (form?.unlocked) {
 			invalidateAll();
 		}
+	});
+
+	$effect(() => {
+		if (passwordInputEl) passwordInputEl.focus();
 	});
 
 	onMount(async () => {
@@ -199,7 +204,7 @@
 						type="password"
 						name="password"
 						placeholder="Password"
-						autofocus
+						bind:this={passwordInputEl}
 						class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					/>
 					{#if form?.passwordError}

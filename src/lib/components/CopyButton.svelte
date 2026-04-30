@@ -66,6 +66,7 @@
 			e.stopPropagation();
 			open = !open;
 		}}
+		aria-label="More copy options"
 		class="text-sm px-1.5 py-1.5 rounded-r-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors border-l border-neutral-200 dark:border-neutral-700"
 	>
 		<svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
