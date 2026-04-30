@@ -128,9 +128,7 @@
 				{/each}
 			</div>
 
-			<div class="h-4 w-px bg-neutral-200 dark:bg-neutral-800 hidden sm:block"></div>
-
-			<div class="flex items-center gap-1">
+			<div class="flex items-center gap-1 ml-auto">
 				<CopyButton options={copyOptions} />
 				<PrintButton />
 			</div>

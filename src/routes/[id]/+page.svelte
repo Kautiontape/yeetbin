@@ -237,9 +237,7 @@
 				{/each}
 			</div>
 
-			<div class="h-4 w-px bg-neutral-200 dark:bg-neutral-800 hidden sm:block"></div>
-
-			<div class="flex items-center gap-1 flex-wrap">
+			<div class="flex items-center gap-1 flex-wrap ml-auto">
 				{#if data.bin.mode === 'editable'}
 					<a
 						href="/{data.bin.id}/edit"
