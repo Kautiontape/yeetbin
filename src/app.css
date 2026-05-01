@@ -285,6 +285,78 @@
 	background: #2e1065;
 }
 
+/* Footnotes ([^1] references and definitions) */
+.yb-prose .footnote-ref {
+	font-size: 0.75em;
+	line-height: 0;
+	vertical-align: super;
+}
+
+.yb-prose .footnote-ref a {
+	color: #2563eb;
+	text-decoration: none;
+	padding: 0 0.1em;
+}
+
+.yb-prose .footnote-ref a:hover {
+	text-decoration: underline;
+}
+
+.yb-prose .footnotes-sep {
+	margin-top: 2em;
+	border: 0;
+	border-top: 1px solid #e5e7eb;
+}
+
+:is(.dark) .yb-prose .footnotes-sep {
+	border-top-color: #374151;
+}
+
+.yb-prose .footnotes {
+	font-size: 0.875em;
+	color: #4b5563;
+	margin-top: 1em;
+}
+
+:is(.dark) .yb-prose .footnotes {
+	color: #9ca3af;
+}
+
+.yb-prose .footnotes-list {
+	padding-left: 1.5em;
+	margin: 0;
+}
+
+.yb-prose .footnote-item {
+	margin: 0.4em 0;
+}
+
+.yb-prose .footnote-item p {
+	display: inline;
+	margin: 0;
+}
+
+.yb-prose .footnote-backref {
+	margin-left: 0.4em;
+	color: #2563eb;
+	text-decoration: none;
+	font-size: 0.95em;
+}
+
+.yb-prose .footnote-backref:hover {
+	text-decoration: underline;
+}
+
+/* Smooth scroll + highlight on ref/footnote target */
+.yb-prose :target {
+	background: #fef9c3;
+	transition: background 0.6s ease;
+}
+
+:is(.dark) .yb-prose :target {
+	background: #713f12;
+}
+
 /* Callouts (Obsidian-style) */
 .yb-callout {
 	border-left: 4px solid #6b7280;

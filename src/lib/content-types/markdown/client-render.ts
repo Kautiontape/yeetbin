@@ -1,6 +1,7 @@
 import MarkdownIt from 'markdown-it';
 import taskLists from 'markdown-it-task-lists';
 import markPlugin from 'markdown-it-mark';
+import footnotePlugin from 'markdown-it-footnote';
 import _katexModule from '@vscode/markdown-it-katex';
 const katexPlugin = (_katexModule as any).default || _katexModule;
 import { calloutPlugin } from '$lib/plugins/callout';
@@ -17,6 +18,7 @@ const md = new MarkdownIt({
 md.use(taskLists, { enabled: true, label: true });
 md.use(taskStatesPlugin);
 md.use(markPlugin);
+md.use(footnotePlugin);
 md.use(katexPlugin, { throwOnError: false });
 md.use(calloutPlugin);
 md.use(wikilinkPlugin);

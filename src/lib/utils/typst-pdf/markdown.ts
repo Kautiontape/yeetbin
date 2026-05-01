@@ -9,6 +9,7 @@ import MarkdownIt from 'markdown-it';
 import type { Token } from 'markdown-it/index.js';
 import taskLists from 'markdown-it-task-lists';
 import markPlugin from 'markdown-it-mark';
+import footnotePlugin from 'markdown-it-footnote';
 import _katexModule from '@vscode/markdown-it-katex';
 import { calloutPlugin } from '$lib/plugins/callout';
 import { wikilinkPlugin } from '$lib/plugins/wikilink';
@@ -24,6 +25,7 @@ const md = new MarkdownIt({ html: false, linkify: true, typographer: true });
 md.use(taskLists, { enabled: true, label: true });
 md.use(taskStatesPlugin);
 md.use(markPlugin);
+md.use(footnotePlugin);
 md.use(katexPlugin as never, { throwOnError: false });
 md.use(calloutPlugin);
 md.use(wikilinkPlugin);
@@ -46,6 +48,9 @@ interface Ctx {
 	dataUris: Record<string, string>;
 	httpImages: Record<string, { url: string; alt: string }>;
 	imageCounter: number;
+	// Footnotes: pre-walked typst body per footnote id, and total ref count per id.
+	footnoteBodies: Map<number, string>;
+	footnoteRefCounts: Map<number, number>;
 }
 
 export function markdownToTypst(content: string): ConvertResult {
@@ -54,8 +59,11 @@ export function markdownToTypst(content: string): ConvertResult {
 		mermaids: [],
 		dataUris: {},
 		httpImages: {},
-		imageCounter: 0
+		imageCounter: 0,
+		footnoteBodies: new Map(),
+		footnoteRefCounts: new Map()
 	};
+	prescanFootnotes(tokens, ctx);
 	const out = walkBlocks(tokens, ctx);
 	return {
 		typst: out,
@@ -155,6 +163,14 @@ function walkBlocks(tokens: Token[], ctx: Ctx): string {
 				// We disabled html in markdown-it config, but plugins (callouts) emit
 				// the open/close handlers; html_block tokens shouldn't appear.
 				i++;
+				continue;
+			}
+
+			case 'footnote_block_open': {
+				// Skip the entire footnotes section — Typst auto-places notes at
+				// page bottom via #footnote, which we emit at each ref site.
+				const close = matchClose(tokens, i, 'footnote_block_close');
+				i = close + 1;
 				continue;
 			}
 
@@ -434,6 +450,13 @@ function walkInline(children: Token[], ctx: Ctx): string {
 				out += `#yb-wikilink([${escapeMarkup(display)}])`;
 				break;
 			}
+			case 'footnote_ref': {
+				const meta = c.meta as { id: number; subId?: number; label?: string } | undefined;
+				if (!meta) break;
+				// Inline footnotes (^[...]) omit subId — treat as 0.
+				out += emitFootnoteRef(meta.id, meta.subId ?? 0, ctx);
+				break;
+			}
 			case 'html_inline':
 				// Drop html_inline (we never enabled html); plugins should have handled.
 				break;
@@ -442,6 +465,77 @@ function walkInline(children: Token[], ctx: Ctx): string {
 		}
 	}
 	return out;
+}
+
+// Pre-scan tokens to (a) count how many times each footnote id is referenced
+// in the body and (b) extract the typst-converted body for each footnote
+// definition. Both are needed before walking content so the FIRST ref site
+// can emit `#footnote[body + N backrefs]` with all subId backrefs included.
+function prescanFootnotes(tokens: Token[], ctx: Ctx): void {
+	// Count refs everywhere (refs live in inline children).
+	const visit = (toks: Token[]) => {
+		for (const t of toks) {
+			if (t.type === 'footnote_ref' && t.meta) {
+				const id = (t.meta as { id: number }).id;
+				ctx.footnoteRefCounts.set(id, (ctx.footnoteRefCounts.get(id) ?? 0) + 1);
+			}
+			if (t.children) visit(t.children);
+		}
+	};
+	visit(tokens);
+
+	// Extract footnote definitions from the footnote_block.
+	for (let i = 0; i < tokens.length; i++) {
+		if (tokens[i].type !== 'footnote_block_open') continue;
+		const blockEnd = matchClose(tokens, i, 'footnote_block_close');
+		let j = i + 1;
+		while (j < blockEnd) {
+			if (tokens[j].type === 'footnote_open') {
+				const meta = tokens[j].meta as { id: number } | undefined;
+				const itemEnd = matchClose(tokens, j, 'footnote_close');
+				if (meta) {
+					// Walk inner block tokens, but strip the footnote_anchor tokens
+					// (we emit our own backrefs).
+					const inner = tokens.slice(j + 1, itemEnd).filter(
+						(t) => t.type !== 'footnote_anchor'
+					);
+					const body = walkBlocks(inner, ctx).trim();
+					ctx.footnoteBodies.set(meta.id, body);
+				}
+				j = itemEnd + 1;
+			} else {
+				j++;
+			}
+		}
+		i = blockEnd;
+	}
+}
+
+// Emit a footnote reference at a specific site.
+//   First occurrence (subId 0): defines the note with body + backref links to
+//     each ref site (one ↩ per ref, subscripted when there are multiple), and
+//     attaches label <fn-{id}> so subsequent refs can point to it.
+//   Subsequent occurrences: just call #footnote(<fn-{id}>).
+// In both cases, an empty box labeled <fnref-{id}-{subId}> is placed first
+// so the backref ↩ has somewhere to jump to.
+function emitFootnoteRef(id: number, subId: number, ctx: Ctx): string {
+	const anchor = `#box[]<fnref-${id}-${subId}>`;
+	if (subId === 0) {
+		const body = ctx.footnoteBodies.get(id) ?? '';
+		const refCount = ctx.footnoteRefCounts.get(id) ?? 1;
+		let backrefs = '';
+		if (refCount === 1) {
+			backrefs = ` #h(0.4em) #link(<fnref-${id}-0>)[↩]`;
+		} else {
+			const parts: string[] = [];
+			for (let n = 0; n < refCount; n++) {
+				parts.push(`#link(<fnref-${id}-${n}>)[↩#sub[${n + 1}]]`);
+			}
+			backrefs = ` #h(0.4em) ${parts.join(' ')}`;
+		}
+		return `${anchor}#footnote[${body}${backrefs}]<fn-${id}>`;
+	}
+	return `${anchor}#footnote(<fn-${id}>)`;
 }
 
 function matchClose(tokens: Token[], openIdx: number, closeType: string): number {
