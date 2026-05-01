@@ -6,6 +6,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import ContentPreview from '$lib/components/ContentPreview.svelte';
 	import CopyButton from '$lib/components/CopyButton.svelte';
+	import DownloadPdfButton from '$lib/components/DownloadPdfButton.svelte';
 	import PrintButton from '$lib/components/PrintButton.svelte';
 	import { decrypt } from '$lib/utils/crypto';
 	import { renderMarkdown } from '$lib/content-types/markdown/client-render';
@@ -256,6 +257,13 @@
 				{/if}
 				<CopyButton options={copyOptions} />
 				<PrintButton />
+				<DownloadPdfButton
+					getContent={() => displayContent}
+					getType={() => data.bin.type}
+					getLanguage={() => data.bin.language}
+					fallbackName={`yeetbin-${data.bin.id}`}
+					disabled={!displayContent}
+				/>
 			</div>
 		</div>
 

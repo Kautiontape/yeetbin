@@ -47,6 +47,15 @@ importers:
       '@codemirror/view':
         specifier: ^6.41.0
         version: 6.41.0
+      '@myriaddreamin/typst-ts-renderer':
+        specifier: 0.7.0-rc2
+        version: 0.7.0-rc2
+      '@myriaddreamin/typst-ts-web-compiler':
+        specifier: 0.7.0-rc2
+        version: 0.7.0-rc2
+      '@myriaddreamin/typst.ts':
+        specifier: 0.7.0-rc2
+        version: 0.7.0-rc2(@myriaddreamin/typst-ts-renderer@0.7.0-rc2)(@myriaddreamin/typst-ts-web-compiler@0.7.0-rc2)
       '@sveltejs/adapter-node':
         specifier: ^5.5.4
         version: 5.5.4(@sveltejs/kit@2.57.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.3)(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)))(svelte@5.55.3)(typescript@6.0.2)(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)))
@@ -725,6 +734,23 @@ packages:
 
   '@mixmark-io/domino@2.2.0':
     resolution: {integrity: sha512-Y28PR25bHXUg88kCV7nivXrP2Nj2RueZ3/l/jdx6J9f8J4nsEGcgX0Qe6lt7Pa+J79+kPiJU3LguR6O/6zrLOw==}
+
+  '@myriaddreamin/typst-ts-renderer@0.7.0-rc2':
+    resolution: {integrity: sha512-god1tcb2YJDkQfA8gLGcAmykVGBpNKorqqDkXVy3InC18KRbsverJhlrHoONurNIU9JuIHoWjJ2D1ntpjPgzbA==}
+
+  '@myriaddreamin/typst-ts-web-compiler@0.7.0-rc2':
+    resolution: {integrity: sha512-WFO/ecKUfeclld5uDxyjgpnIafKpp2LrS6T1vY+CHaSxCm099AneAQIYFg+OtX+NbFpJsLGCBFSw/qppJJmBAw==}
+
+  '@myriaddreamin/typst.ts@0.7.0-rc2':
+    resolution: {integrity: sha512-VM8JqsRcL3AEJ5cuPBn/YvnGTXK/BRPlxdGB2bR48Of/8OIGaPiunv2QfZBIMBBrtbTygUOtAY9BZvkS1AFqgA==}
+    peerDependencies:
+      '@myriaddreamin/typst-ts-renderer': ^0.7.0-rc2
+      '@myriaddreamin/typst-ts-web-compiler': ^0.7.0-rc2
+    peerDependenciesMeta:
+      '@myriaddreamin/typst-ts-renderer':
+        optional: true
+      '@myriaddreamin/typst-ts-web-compiler':
+        optional: true
 
   '@napi-rs/wasm-runtime@1.1.3':
     resolution: {integrity: sha512-xK9sGVbJWYb08+mTJt3/YV24WxvxpXcXtP6B172paPZ+Ts69Re9dAr7lKwJoeIx8OoeuimEiRZ7umkiUVClmmQ==}
@@ -1806,6 +1832,9 @@ packages:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
 
+  idb@7.1.1:
+    resolution: {integrity: sha512-gchesWBzyvGHRO9W8tzUWFDycow5gwjvFKfyV9FF32Y7F50yZMp7mP+T2mJIWFx49zicqyC4uefHM17o6xKIVQ==}
+
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
@@ -2865,6 +2894,17 @@ snapshots:
 
   '@mixmark-io/domino@2.2.0': {}
 
+  '@myriaddreamin/typst-ts-renderer@0.7.0-rc2': {}
+
+  '@myriaddreamin/typst-ts-web-compiler@0.7.0-rc2': {}
+
+  '@myriaddreamin/typst.ts@0.7.0-rc2(@myriaddreamin/typst-ts-renderer@0.7.0-rc2)(@myriaddreamin/typst-ts-web-compiler@0.7.0-rc2)':
+    dependencies:
+      idb: 7.1.1
+    optionalDependencies:
+      '@myriaddreamin/typst-ts-renderer': 0.7.0-rc2
+      '@myriaddreamin/typst-ts-web-compiler': 0.7.0-rc2
+
   '@napi-rs/wasm-runtime@1.1.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)':
     dependencies:
       '@emnapi/core': 1.9.2
@@ -3834,6 +3874,8 @@ snapshots:
   iconv-lite@0.6.3:
     dependencies:
       safer-buffer: 2.1.2
+
+  idb@7.1.1: {}
 
   ieee754@1.2.1: {}
 

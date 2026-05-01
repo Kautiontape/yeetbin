@@ -5,6 +5,7 @@
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
 	import ContentPreview from '$lib/components/ContentPreview.svelte';
 	import CopyButton from '$lib/components/CopyButton.svelte';
+	import DownloadPdfButton from '$lib/components/DownloadPdfButton.svelte';
 	import PrintButton from '$lib/components/PrintButton.svelte';
 	import { defaultEditMode } from '$lib/utils/responsive';
 	import type { PageData } from './$types';
@@ -60,6 +61,13 @@
 			<div class="flex items-center gap-1 ml-auto">
 				<CopyButton options={copyOptions} />
 				<PrintButton />
+				<DownloadPdfButton
+					getContent={() => content}
+					getType={() => data.bin.type}
+					getLanguage={() => data.bin.language}
+					fallbackName={`yeetbin-${data.bin.id}`}
+					disabled={!content?.trim()}
+				/>
 			</div>
 		</div>
 

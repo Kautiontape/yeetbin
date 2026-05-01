@@ -4,6 +4,7 @@
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
 	import ContentPreview from '$lib/components/ContentPreview.svelte';
 	import CopyButton from '$lib/components/CopyButton.svelte';
+	import DownloadPdfButton from '$lib/components/DownloadPdfButton.svelte';
 	import PrintButton from '$lib/components/PrintButton.svelte';
 	import { encrypt } from '$lib/utils/crypto';
 	import { defaultEditMode } from '$lib/utils/responsive';
@@ -131,6 +132,13 @@
 			<div class="flex items-center gap-1 ml-auto">
 				<CopyButton options={copyOptions} />
 				<PrintButton />
+				<DownloadPdfButton
+					getContent={() => content}
+					getType={() => selectedType}
+					getLanguage={() => (selectedType === 'code' ? selectedLanguage : null)}
+					fallbackName="yeetbin"
+					disabled={!content.trim()}
+				/>
 			</div>
 		</div>
 
