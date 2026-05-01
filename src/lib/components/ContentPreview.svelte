@@ -52,7 +52,7 @@
 
 		const mermaid = (await import('mermaid')).default;
 		const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'default';
-		mermaid.initialize({ startOnLoad: false, theme: currentTheme });
+		mermaid.initialize({ startOnLoad: false, theme: currentTheme, suppressErrorRendering: true });
 
 		for (const el of uncached) {
 			const encoded = el.getAttribute('data-mermaid-source')!;

@@ -18,7 +18,7 @@
 		try {
 			const mermaid = (await import('mermaid')).default;
 			const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'default';
-			mermaid.initialize({ startOnLoad: false, theme: currentTheme });
+			mermaid.initialize({ startOnLoad: false, theme: currentTheme, suppressErrorRendering: true });
 			const id = `mermaid-${Math.random().toString(36).slice(2)}`;
 			const { svg } = await mermaid.render(id, content);
 			diagramEl.innerHTML = svg;
