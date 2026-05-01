@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ThemeToggle from './ThemeToggle.svelte';
 	import { getContentTypeList, getContentType } from '$lib/content-types/registry';
+	import { clearDraft } from '$lib/utils/draft';
 
 	interface Props {
 		showTypeSelector?: boolean;
@@ -32,6 +33,11 @@
 		</a>
 		<a
 			href="/"
+			onclick={(e) => {
+				e.preventDefault();
+				clearDraft();
+				window.location.assign('/');
+			}}
 			class="text-sm px-3 py-1.5 rounded-md bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 		>
 			New

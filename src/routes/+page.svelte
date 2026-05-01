@@ -8,10 +8,13 @@
 	import PrintButton from '$lib/components/PrintButton.svelte';
 	import { encrypt } from '$lib/utils/crypto';
 	import { defaultEditMode } from '$lib/utils/responsive';
+	import { loadDraft, saveDraft, clearDraft } from '$lib/utils/draft';
 
-	let content = $state('');
-	let selectedType = $state('markdown');
-	let selectedLanguage = $state('javascript');
+	const initialDraft = loadDraft();
+
+	let content = $state(initialDraft?.content ?? '');
+	let selectedType = $state(initialDraft?.type ?? 'markdown');
+	let selectedLanguage = $state(initialDraft?.language ?? 'javascript');
 	let viewMode = $state<'edit' | 'preview' | 'split'>(defaultEditMode());
 	let selectedMode = $state<'read-only' | 'editable' | 'forkable'>('read-only');
 	let password = $state('');
@@ -32,6 +35,13 @@
 	// Encrypted bins must be read-only
 	$effect(() => {
 		if (encrypted) selectedMode = 'read-only';
+	});
+
+	// Debounced autosave to localStorage
+	$effect(() => {
+		const snapshot = { content, type: selectedType, language: selectedLanguage };
+		const timer = setTimeout(() => saveDraft(snapshot), 500);
+		return () => clearTimeout(timer);
 	});
 
 	function computeExpiresAt(): string | null {
@@ -81,6 +91,7 @@
 				return;
 			}
 
+			clearDraft();
 			const url = encrypted ? `/${data.id}#key=${encryptionKey}` : `/${data.id}`;
 			await goto(url);
 		} catch (e) {
@@ -90,14 +101,6 @@
 		}
 	}
 </script>
-
-<svelte:window
-	onbeforeunload={(e) => {
-		if (content.trim()) {
-			e.preventDefault();
-		}
-	}}
-/>
 
 <svelte:head>
 	<title>yeetbin</title>
