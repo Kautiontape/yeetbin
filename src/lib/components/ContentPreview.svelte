@@ -16,24 +16,47 @@
 	let markdownHtml = $state('');
 	let markdownEl: HTMLDivElement | undefined = $state();
 
+	// Cache rendered Mermaid SVGs by source to avoid flash on re-render
+	const mermaidCache = new Map<string, string>();
+
 	$effect(() => {
 		if (type === 'markdown' && !renderedHtml) {
 			markdownHtml = renderMarkdown(content);
 		}
 	});
 
+	function restoreCachedMermaid() {
+		if (!markdownEl) return;
+		const els = markdownEl.querySelectorAll<HTMLElement>('.yb-mermaid[data-mermaid-source]');
+		for (const el of els) {
+			const source = el.getAttribute('data-mermaid-source')!;
+			const cached = mermaidCache.get(source);
+			if (cached) {
+				el.innerHTML = cached;
+				el.classList.add('yb-mermaid-rendered');
+			}
+		}
+	}
+
 	async function hydrateMermaid() {
 		if (!browser || !markdownEl) return;
 		const els = markdownEl.querySelectorAll<HTMLElement>('.yb-mermaid[data-mermaid-source]');
 		if (!els.length) return;
 
+		// Restore cached SVGs immediately to prevent flash
+		restoreCachedMermaid();
+
+		// Find elements that still need rendering (not in cache)
+		const uncached = Array.from(els).filter((el) => !el.classList.contains('yb-mermaid-rendered'));
+		if (!uncached.length) return;
+
 		const mermaid = (await import('mermaid')).default;
 		const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'default';
 		mermaid.initialize({ startOnLoad: false, theme: currentTheme });
 
-		for (const el of els) {
-			const source = el
-				.getAttribute('data-mermaid-source')!
+		for (const el of uncached) {
+			const encoded = el.getAttribute('data-mermaid-source')!;
+			const source = encoded
 				.replace(/&amp;/g, '&')
 				.replace(/&lt;/g, '<')
 				.replace(/&gt;/g, '>')
@@ -45,11 +68,18 @@
 				);
 				el.innerHTML = svg;
 				el.classList.add('yb-mermaid-rendered');
+				mermaidCache.set(encoded, svg);
 			} catch {
 				// Keep fallback visible
 			}
 		}
 	}
+
+	// Invalidate mermaid cache on theme change so diagrams re-render
+	$effect(() => {
+		void $theme;
+		mermaidCache.clear();
+	});
 
 	$effect(() => {
 		// Track HTML and theme so the effect re-runs on either change
