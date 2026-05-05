@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 
 	interface Props {
@@ -11,19 +10,25 @@
 	let { content, renderedHtml, language = 'text' }: Props = $props();
 	let codeEl: HTMLDivElement;
 	let clientHtml = $state('');
+	let renderSeq = 0;
 
-	onMount(async () => {
+	$effect(() => {
 		if (renderedHtml || !browser) return;
-		// Client-side Shiki highlighting for non-SSR cases
-		try {
-			const { codeToHtml } = await import('shiki');
-			clientHtml = await codeToHtml(content, {
-				lang: language || 'text',
-				themes: { dark: 'github-dark', light: 'github-light' }
-			});
-		} catch {
-			// fallback handled in template
-		}
+		const lang = language || 'text';
+		const src = content;
+		const seq = ++renderSeq;
+		(async () => {
+			try {
+				const { codeToHtml } = await import('shiki');
+				const html = await codeToHtml(src, {
+					lang,
+					themes: { dark: 'github-dark', light: 'github-light' }
+				});
+				if (seq === renderSeq) clientHtml = html;
+			} catch {
+				// fallback handled in template
+			}
+		})();
 	});
 </script>
 
