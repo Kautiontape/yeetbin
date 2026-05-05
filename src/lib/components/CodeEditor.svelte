@@ -72,6 +72,10 @@
 				const { sql } = await import('@codemirror/lang-sql');
 				return sql();
 			}
+			case 'php': {
+				const { php } = await import('@codemirror/lang-php');
+				return php();
+			}
 			default: {
 				// Fallback to plain text (no language extension)
 				return null;
