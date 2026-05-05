@@ -35,7 +35,8 @@ export const contentTypes: Record<string, ContentTypeDefinition> = {
 			{ value: 'bash', label: 'Bash' },
 			{ value: 'rust', label: 'Rust' },
 			{ value: 'go', label: 'Go' },
-			{ value: 'sql', label: 'SQL' }
+			{ value: 'sql', label: 'SQL' },
+			{ value: 'php', label: 'PHP' }
 		]
 	},
 	mermaid: {
