@@ -1,6 +1,6 @@
 services:
   app:
-    build: .
+    image: ghcr.io/kautiontape/yeetbin:latest
     container_name: yeetbin
     ports:
       - "127.0.0.1:8108:3000"
