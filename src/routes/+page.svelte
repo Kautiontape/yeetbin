@@ -44,6 +44,15 @@
 		return () => clearTimeout(timer);
 	});
 
+	function loadFile(text: string, type: string, language?: string) {
+		if (content.trim() && !confirm('Replace the current content with the loaded file?')) {
+			return;
+		}
+		content = text;
+		selectedType = type;
+		if (language) selectedLanguage = language;
+	}
+
 	function computeExpiresAt(): string | null {
 		if (!expiry) return null;
 		const ms: Record<string, number> = {
@@ -113,6 +122,7 @@
 		onTypeChange={(t) => (selectedType = t)}
 		{selectedLanguage}
 		onLanguageChange={(l) => (selectedLanguage = l)}
+		onLoad={loadFile}
 	/>
 
 	<div class="flex-1 flex flex-col overflow-hidden">
@@ -166,6 +176,8 @@
 						{content}
 						onchange={(v) => (content = v)}
 						placeholder="Paste your content here..."
+						type={selectedType}
+						language={selectedLanguage}
 					/>
 				</div>
 				<div class="yb-split-pane flex-1 min-w-0 overflow-auto">

@@ -124,8 +124,15 @@
 
 	async function rebuildEditor() {
 		if (!container) return;
-		const doc = view ? view.state.doc.toString() : content;
-		view?.destroy();
+		// The `content` prop is the source of truth; in steady-state typing it
+		// already mirrors the editor doc, so rebuilding from it preserves typed
+		// text and also picks up externally-set content (e.g. loaded files).
+		const doc = content;
+		const old = view;
+		// Clear the reference before the async gap so the content-sync effect
+		// doesn't dispatch onto a destroyed view.
+		view = undefined;
+		old?.destroy();
 		langExtension = await loadLanguageExtension();
 		view = createView(doc);
 	}
@@ -141,6 +148,20 @@
 		type;
 		language;
 		if (view) rebuildEditor();
+	});
+
+	// Sync externally-set content (e.g. a loaded file) into the editor.
+	// User typing keeps `content` equal to the doc, so this is a no-op then.
+	// Read `content` first so it's always tracked — even on the initial run
+	// when `view` is still undefined during the async onMount.
+	$effect(() => {
+		const next = content;
+		if (!view) return;
+		if (next !== view.state.doc.toString()) {
+			view.dispatch({
+				changes: { from: 0, to: view.state.doc.length, insert: next }
+			});
+		}
 	});
 
 	onMount(async () => {

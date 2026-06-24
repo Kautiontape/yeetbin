@@ -2,6 +2,7 @@
 	import ThemeToggle from './ThemeToggle.svelte';
 	import { getContentTypeList, getContentType } from '$lib/content-types/registry';
 	import { clearDraft } from '$lib/utils/draft';
+	import { detectFromFilename } from '$lib/utils/detect-type';
 
 	interface Props {
 		showTypeSelector?: boolean;
@@ -9,6 +10,7 @@
 		onTypeChange?: (type: string) => void;
 		selectedLanguage?: string;
 		onLanguageChange?: (lang: string) => void;
+		onLoad?: (text: string, type: string, language?: string) => void;
 	}
 
 	let {
@@ -16,12 +18,29 @@
 		selectedType = 'markdown',
 		onTypeChange,
 		selectedLanguage = 'javascript',
-		onLanguageChange
+		onLanguageChange,
+		onLoad
 	}: Props = $props();
 
 	const types = getContentTypeList();
 
 	let languages = $derived(getContentType(selectedType).languages);
+
+	let fileInput = $state<HTMLInputElement>();
+
+	async function handleFile(e: Event) {
+		const input = e.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		try {
+			const text = await file.text();
+			const { type, language } = detectFromFilename(file.name);
+			onLoad?.(text, type, language);
+		} finally {
+			// Reset so selecting the same file again still fires a change event.
+			input.value = '';
+		}
+	}
 </script>
 
 <header
@@ -42,6 +61,21 @@
 		>
 			New
 		</a>
+		{#if onLoad}
+			<input
+				bind:this={fileInput}
+				type="file"
+				class="hidden"
+				onchange={handleFile}
+			/>
+			<button
+				type="button"
+				onclick={() => fileInput?.click()}
+				class="text-sm px-3 py-1.5 rounded-md bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+			>
+				Load
+			</button>
+		{/if}
 		{#if showTypeSelector}
 			<select
 				value={selectedType}
