@@ -6,7 +6,34 @@ import { serverRenderContent } from '$lib/server/render.js';
 import bcrypt from 'bcryptjs';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({ params, cookies }) => {
+function meta(bin: typeof bins.$inferSelect) {
+	return {
+		id: bin.id,
+		type: bin.type,
+		language: bin.language,
+		mode: bin.mode,
+		encrypted: bin.encrypted,
+		forked_from: bin.forked_from,
+		burn: bin.burn,
+		created_at: bin.created_at,
+		has_password: !!bin.password
+	};
+}
+
+export const load: PageServerLoad = async ({ params, cookies, locals }) => {
+	// A bin revealed by the `reveal` action below is already deleted by the time
+	// loads re-run in the same request, so the action hands the content over here.
+	const burned = locals.burnedBin;
+	if (burned && burned.bin.id === params.id) {
+		return {
+			bin: burned.bin,
+			passwordRequired: false,
+			burnPending: false,
+			justBurned: true,
+			renderedHtml: burned.renderedHtml
+		};
+	}
+
 	const bin = db.select().from(bins).where(eq(bins.id, params.id)).get();
 
 	if (!bin) {
@@ -24,25 +51,26 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		const authToken = cookies.get(`yb-auth-${bin.id}`);
 		if (authToken !== 'granted') {
 			return {
-				bin: {
-					id: bin.id,
-					type: bin.type,
-					mode: bin.mode,
-					encrypted: bin.encrypted,
-					forked_from: bin.forked_from,
-					burn: bin.burn,
-					created_at: bin.created_at,
-					has_password: true
-				},
+				bin: { ...meta(bin), content: null },
 				passwordRequired: true,
+				burnPending: false,
+				justBurned: false,
 				renderedHtml: null
 			};
 		}
 	}
 
-	// Handle burn-after-reading: serve content then delete
+	// Burn-after-reading: never hand out the content on a plain page view, or the
+	// author burns their own bin the moment they land on it after publishing.
+	// The reader has to ask for it explicitly via the `reveal` action below.
 	if (bin.burn) {
-		db.delete(bins).where(eq(bins.id, params.id)).run();
+		return {
+			bin: { ...meta(bin), content: null },
+			passwordRequired: false,
+			burnPending: true,
+			justBurned: false,
+			renderedHtml: null
+		};
 	}
 
 	// SSR: render content to HTML on the server if possible
@@ -52,19 +80,10 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 	}
 
 	return {
-		bin: {
-			id: bin.id,
-			content: bin.content,
-			type: bin.type,
-			language: bin.language,
-			mode: bin.mode,
-			encrypted: bin.encrypted,
-			forked_from: bin.forked_from,
-			burn: bin.burn,
-			created_at: bin.created_at,
-			has_password: !!bin.password
-		},
+		bin: { ...meta(bin), content: bin.content },
 		passwordRequired: false,
+		burnPending: false,
+		justBurned: false,
 		renderedHtml
 	};
 };
@@ -98,5 +117,42 @@ export const actions = {
 		});
 
 		return { unlocked: true };
+	},
+
+	reveal: async ({ params, cookies, locals }) => {
+		const bin = db.select().from(bins).where(eq(bins.id, params.id)).get();
+
+		if (!bin) {
+			error(404, 'Bin not found');
+		}
+
+		if (bin.expires_at && new Date(bin.expires_at) < new Date()) {
+			db.delete(bins).where(eq(bins.id, params.id)).run();
+			error(410, 'This bin has expired');
+		}
+
+		if (!bin.burn) {
+			error(400, 'This bin does not burn after reading');
+		}
+
+		if (bin.password && cookies.get(`yb-auth-${bin.id}`) !== 'granted') {
+			error(401, 'Password required');
+		}
+
+		// Hand the content over exactly once, then drop the row.
+		db.delete(bins).where(eq(bins.id, params.id)).run();
+
+		const revealed = {
+			bin: { ...meta(bin), content: bin.content },
+			renderedHtml: bin.encrypted
+				? null
+				: await serverRenderContent(bin.type, bin.content, bin.language)
+		};
+
+		// For a no-JS form post, loads re-run before the page renders — and the
+		// bin is gone by then. Pass it along on `locals` so load can still use it.
+		locals.burnedBin = revealed;
+
+		return { revealed: true, ...revealed };
 	}
 } satisfies Actions;

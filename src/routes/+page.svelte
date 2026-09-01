@@ -232,7 +232,10 @@
 		</select>
 
 		<div class="flex items-center gap-3">
-			<label class="flex items-center gap-1.5 text-neutral-500 cursor-pointer">
+			<label
+				class="flex items-center gap-1.5 text-neutral-500 cursor-pointer"
+				title="Burn after reading: the content stays hidden until someone opens it, then it's deleted from the server. Only one person can read it."
+			>
 				<input type="checkbox" bind:checked={burn} class="rounded" />
 				Burn
 			</label>

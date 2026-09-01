@@ -12,6 +12,11 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(404, 'Bin not found');
 	}
 
+	// Forking would hand out a burn bin's content without burning it
+	if (bin.burn) {
+		error(403, 'Burn-after-reading bins cannot be forked');
+	}
+
 	return {
 		parent: {
 			id: bin.id,

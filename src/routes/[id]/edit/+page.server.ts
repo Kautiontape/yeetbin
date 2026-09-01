@@ -15,6 +15,11 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(403, 'This bin is not editable');
 	}
 
+	// Editing would hand out a burn bin's content without burning it
+	if (bin.burn) {
+		error(403, 'Burn-after-reading bins cannot be edited');
+	}
+
 	return {
 		bin: {
 			id: bin.id,
@@ -36,6 +41,10 @@ export const actions = {
 
 		if (bin.mode !== 'editable') {
 			error(403, 'This bin is not editable');
+		}
+
+		if (bin.burn) {
+			error(403, 'Burn-after-reading bins cannot be edited');
 		}
 
 		const form = await request.formData();

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { applyAction, enhance } from '$app/forms';
+	import { invalidateAll, beforeNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import ContentPreview from '$lib/components/ContentPreview.svelte';
 	import CopyButton from '$lib/components/CopyButton.svelte';
@@ -16,11 +16,20 @@
 	let viewMode = $state<'rendered' | 'source' | 'split'>('rendered');
 	let contentEl = $state<HTMLDivElement | undefined>();
 	let passwordInputEl: HTMLInputElement | undefined = $state();
+	let revealing = $state(false);
+	let linkCopied = $state(false);
 
 	// Encryption state
 	let decryptedContent = $state<string | null>(null);
 	let decryptedHtml = $state<string | null>(null);
 	let decryptError = $state('');
+
+	// A burn bin this page just opened: the server copy is already deleted, so
+	// this tab is holding the only remaining copy of the content.
+	let justBurned = $derived(!!form?.revealed || data.justBurned);
+	let bin = $derived(form?.revealed ? form.bin : data.bin);
+	let serverHtml = $derived(form?.revealed ? form.renderedHtml : data.renderedHtml);
+	let burnPending = $derived(data.burnPending && !justBurned);
 
 	// After successful unlock, reload the page data
 	$effect(() => {
@@ -33,32 +42,66 @@
 		if (passwordInputEl) passwordInputEl.focus();
 	});
 
-	onMount(async () => {
-		if (!browser || data.passwordRequired) return;
+	// Decrypt end-to-end encrypted content once it's available — which for a
+	// burn bin is only after the reveal, not on mount.
+	$effect(() => {
+		const ciphertext = bin?.encrypted ? (bin.content ?? null) : null;
+		const type = bin?.type;
+		if (!browser || !ciphertext || decryptedContent) return;
 
-		// Handle encrypted bins
-		if (data.bin.encrypted && data.bin.content) {
-			const hash = window.location.hash;
-			const keyMatch = hash.match(/key=([^&]+)/);
-			if (!keyMatch) {
-				decryptError = 'No decryption key found in URL. Ask the sender for the full link.';
-				return;
-			}
-			try {
-				decryptedContent = await decrypt(data.bin.content, keyMatch[1]);
-				// Client-side render for markdown
-				if (data.bin.type === 'markdown') {
-					decryptedHtml = renderMarkdown(decryptedContent);
-				}
-			} catch {
-				decryptError = 'Decryption failed. The key may be incorrect.';
-				return;
-			}
+		const hash = window.location.hash;
+		const keyMatch = hash.match(/key=([^&]+)/);
+		if (!keyMatch) {
+			decryptError = 'No decryption key found in URL. Ask the sender for the full link.';
+			return;
 		}
 
-		// Hydrate Mermaid diagrams
-		await hydrateMermaid();
+		let cancelled = false;
+		(async () => {
+			try {
+				const plaintext = await decrypt(ciphertext, keyMatch[1]);
+				if (cancelled) return;
+				decryptedContent = plaintext;
+				if (type === 'markdown') {
+					decryptedHtml = renderMarkdown(plaintext);
+				}
+			} catch {
+				if (!cancelled) decryptError = 'Decryption failed. The key may be incorrect.';
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
 	});
+
+	// Warn before the only copy of a burned bin is thrown away
+	$effect(() => {
+		if (!browser || !justBurned) return;
+		const handler = (e: BeforeUnloadEvent) => {
+			e.preventDefault();
+			e.returnValue = '';
+		};
+		window.addEventListener('beforeunload', handler);
+		return () => window.removeEventListener('beforeunload', handler);
+	});
+
+	beforeNavigate((nav) => {
+		if (!justBurned || nav.type === 'leave') return;
+		const ok = confirm(
+			'This bin has already been deleted from the server. If you leave this page the content is gone for good. Leave anyway?'
+		);
+		if (!ok) nav.cancel();
+	});
+
+	// window.location keeps the #key fragment that encrypted bins need in the link
+	let shareUrl = $derived(browser ? window.location.href : page.url.href);
+
+	async function copyLink() {
+		await navigator.clipboard.writeText(shareUrl);
+		linkCopied = true;
+		setTimeout(() => (linkCopied = false), 2000);
+	}
 
 	async function hydrateMermaid() {
 		if (!contentEl) return;
@@ -89,12 +132,15 @@
 	}
 
 	// Resolved content — decrypted or plaintext
-	let displayContent = $derived(
-		data.bin.encrypted ? decryptedContent : (data.bin.content ?? null)
-	);
-	let displayHtml = $derived(
-		data.bin.encrypted ? decryptedHtml : (data.renderedHtml ?? null)
-	);
+	let displayContent = $derived(bin?.encrypted ? decryptedContent : (bin?.content ?? null));
+	let displayHtml = $derived(bin?.encrypted ? decryptedHtml : (serverHtml ?? null));
+
+	$effect(() => {
+		// Re-run whenever new content lands in the DOM (reveal, decrypt, view switch)
+		displayContent;
+		displayHtml;
+		if (browser && contentEl) hydrateMermaid();
+	});
 
 	let copyOptions = $derived.by(() => {
 		const opts: { label: string; action: () => void }[] = [];
@@ -106,7 +152,7 @@
 			}
 		});
 
-		if (data.bin.type === 'mermaid') {
+		if (bin?.type === 'mermaid') {
 			opts.push({
 				label: 'Copy Preview',
 				action: async () => {
@@ -220,7 +266,77 @@
 				</form>
 			</div>
 		</div>
+	{:else if burnPending}
+		<!-- Burn bin that hasn't been opened yet: hide the content behind a click -->
+		<div class="flex-1 flex items-center justify-center overflow-auto">
+			<div class="w-full max-w-md px-6 py-8">
+				<h2 class="text-lg font-semibold text-center">This bin burns after reading</h2>
+				<p class="text-sm text-neutral-500 mt-2 text-center">
+					The content stays hidden until someone opens it. It can be opened once — after that
+					it's deleted from the server for good, including for you.
+				</p>
+
+				<div
+					class="mt-5 rounded-md border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2.5 text-sm text-amber-800 dark:text-amber-200"
+				>
+					Opening it here uses up that one read. If you just created this bin, copy the link and
+					send it instead.
+				</div>
+
+				<div class="mt-5">
+					<p class="text-xs text-neutral-500 mb-1.5">Link to share</p>
+					<div class="flex items-center gap-2">
+						<input
+							type="text"
+							readonly
+							value={shareUrl}
+							onfocus={(e) => e.currentTarget.select()}
+							class="flex-1 min-w-0 px-2 py-1.5 text-sm font-mono rounded-md border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+						/>
+						<button
+							onclick={copyLink}
+							class="shrink-0 px-3 py-1.5 text-sm rounded-md border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+						>
+							{linkCopied ? 'Copied' : 'Copy'}
+						</button>
+					</div>
+				</div>
+
+				<form
+					method="POST"
+					action="?/reveal"
+					use:enhance={() => {
+						revealing = true;
+						// applyAction, not update() — update() invalidates, which would
+						// re-run load against a bin that no longer exists.
+						return async ({ result }) => {
+							await applyAction(result);
+							revealing = false;
+						};
+					}}
+					class="mt-6"
+				>
+					<button
+						type="submit"
+						disabled={revealing}
+						class="w-full px-4 py-2 text-sm font-medium rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+					>
+						{revealing ? 'Opening...' : 'Show it once, then delete it'}
+					</button>
+				</form>
+			</div>
+		</div>
 	{:else}
+		{#if justBurned}
+			<div
+				class="yb-print-hide px-4 py-2.5 border-b border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/50 text-sm text-red-800 dark:text-red-200"
+			>
+				<span class="font-semibold">Burned.</span>
+				This bin has been deleted from the server. What you see below is the only copy left — if
+				you reload or leave this page it's gone.
+			</div>
+		{/if}
+
 		<!-- Reader toolbar -->
 		<div
 			class="yb-print-hide flex flex-wrap items-center gap-2 px-4 py-2 border-b border-neutral-200 dark:border-neutral-700"
@@ -239,17 +355,17 @@
 			</div>
 
 			<div class="flex items-center gap-1 flex-wrap ml-auto">
-				{#if data.bin.mode === 'editable'}
+				{#if bin.mode === 'editable' && !bin.burn}
 					<a
-						href="/{data.bin.id}/edit"
+						href="/{bin.id}/edit"
 						class="text-sm px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
 					>
 						Edit
 					</a>
 				{/if}
-				{#if data.bin.mode === 'forkable' || data.bin.mode === 'read-only'}
+				{#if (bin.mode === 'forkable' || bin.mode === 'read-only') && !bin.burn}
 					<a
-						href="/{data.bin.id}/fork"
+						href="/{bin.id}/fork"
 						class="text-sm px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
 					>
 						Fork
@@ -259,23 +375,23 @@
 				<PrintButton />
 				<DownloadPdfButton
 					getContent={() => displayContent}
-					getType={() => data.bin.type}
-					getLanguage={() => data.bin.language}
-					fallbackName={`yeetbin-${data.bin.id}`}
+					getType={() => bin.type}
+					getLanguage={() => bin.language}
+					fallbackName={`yeetbin-${bin.id}`}
 					disabled={!displayContent}
 				/>
 			</div>
 		</div>
 
 		<!-- Content -->
-		{#if data.bin.encrypted && decryptError}
+		{#if bin.encrypted && decryptError}
 			<div class="flex-1 flex items-center justify-center">
 				<div class="text-center max-w-sm">
 					<p class="text-lg font-semibold mb-2">Encrypted bin</p>
 					<p class="text-sm text-red-500">{decryptError}</p>
 				</div>
 			</div>
-		{:else if data.bin.encrypted && !decryptedContent}
+		{:else if bin.encrypted && !decryptedContent}
 			<div class="flex-1 flex items-center justify-center">
 				<p class="text-neutral-500">Decrypting...</p>
 			</div>
@@ -288,7 +404,7 @@
 				</div>
 				<div bind:this={contentEl} class="yb-split-pane flex-1 min-w-0 overflow-auto">
 					<div class="px-6 py-8">
-						{#if displayContent}<ContentPreview content={displayContent} type={data.bin.type} language={data.bin.language} renderedHtml={displayHtml} />{/if}
+						{#if displayContent}<ContentPreview content={displayContent} type={bin.type} language={bin.language} renderedHtml={displayHtml} />{/if}
 					</div>
 				</div>
 			</div>
@@ -301,7 +417,7 @@
 		{:else}
 			<div class="yb-print-hide flex-1 overflow-auto">
 				<div bind:this={contentEl} class="max-w-3xl mx-auto px-6 py-8">
-					{#if displayContent}<ContentPreview content={displayContent} type={data.bin.type} language={data.bin.language} renderedHtml={displayHtml} />{/if}
+					{#if displayContent}<ContentPreview content={displayContent} type={bin.type} language={bin.language} renderedHtml={displayHtml} />{/if}
 				</div>
 			</div>
 		{/if}
@@ -312,7 +428,7 @@
 				<div class="yb-print-rendered">
 					<p class="yb-print-section-label">Rendered</p>
 					<div class="max-w-3xl mx-auto px-6 py-8">
-						<ContentPreview content={displayContent} type={data.bin.type} language={data.bin.language} renderedHtml={displayHtml} />
+						<ContentPreview content={displayContent} type={bin.type} language={bin.language} renderedHtml={displayHtml} />
 					</div>
 				</div>
 				<div class="yb-print-source">
@@ -332,31 +448,31 @@
 				<span
 					class="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-medium"
 				>
-					{data.bin.type}{#if data.bin.type === 'code' && data.bin.language}:{data.bin.language}{/if}
+					{bin.type}{#if bin.type === 'code' && bin.language}:{bin.language}{/if}
 				</span>
-				{#if data.bin.mode !== 'read-only'}
+				{#if bin.mode !== 'read-only' && !bin.burn}
 					<span class="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800">
-						{data.bin.mode}
+						{bin.mode}
 					</span>
 				{/if}
-				{#if data.bin.encrypted}
+				{#if bin.encrypted}
 					<span class="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
 						encrypted
 					</span>
 				{/if}
-				{#if data.bin.burn}
+				{#if bin.burn}
 					<span class="px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300">
-						burned
+						{justBurned ? 'burned — deleted from server' : 'burns after reading'}
 					</span>
 				{/if}
-				{#if data.bin.forked_from}
+				{#if bin.forked_from}
 					<span>
-						forked from <a href="/{data.bin.forked_from}" class="underline">{data.bin.forked_from}</a>
+						forked from <a href="/{bin.forked_from}" class="underline">{bin.forked_from}</a>
 					</span>
 				{/if}
 			</div>
 			<span>
-				{new Date(data.bin.created_at).toLocaleDateString('en-US', {
+				{new Date(bin.created_at).toLocaleDateString('en-US', {
 					year: 'numeric',
 					month: 'short',
 					day: 'numeric',

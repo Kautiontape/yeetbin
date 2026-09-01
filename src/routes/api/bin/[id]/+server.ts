@@ -45,6 +45,10 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		error(403, 'This bin is not editable');
 	}
 
+	if (bin.burn) {
+		error(403, 'Burn-after-reading bins cannot be edited');
+	}
+
 	const body = await request.json();
 	const { content } = body;
 
