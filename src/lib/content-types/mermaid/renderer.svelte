@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { theme } from '$lib/stores/theme';
+	import { markExpandable } from '$lib/components/MermaidLightbox.svelte';
 
 	interface Props {
 		content: string;
@@ -22,6 +23,7 @@
 			const id = `mermaid-${Math.random().toString(36).slice(2)}`;
 			const { svg } = await mermaid.render(id, content);
 			diagramEl.innerHTML = svg;
+			markExpandable(diagramEl);
 			rendered = true;
 			error = '';
 		} catch (e) {

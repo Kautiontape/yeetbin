@@ -103,44 +103,9 @@
 		setTimeout(() => (linkCopied = false), 2000);
 	}
 
-	async function hydrateMermaid() {
-		if (!contentEl) return;
-		const mermaidEls = contentEl.querySelectorAll('.yb-mermaid[data-mermaid-source]');
-		if (!mermaidEls.length) return;
-
-		const mermaid = (await import('mermaid')).default;
-		mermaid.initialize({ startOnLoad: false, theme: 'dark' });
-
-		for (const el of mermaidEls) {
-			const source = el
-				.getAttribute('data-mermaid-source')!
-				.replace(/&amp;/g, '&')
-				.replace(/&lt;/g, '<')
-				.replace(/&gt;/g, '>')
-				.replace(/&quot;/g, '"');
-			try {
-				const { svg } = await mermaid.render(
-					`mermaid-${Math.random().toString(36).slice(2)}`,
-					source
-				);
-				el.innerHTML = svg;
-				el.classList.add('yb-mermaid-rendered');
-			} catch {
-				// Keep fallback visible
-			}
-		}
-	}
-
 	// Resolved content — decrypted or plaintext
 	let displayContent = $derived(bin?.encrypted ? decryptedContent : (bin?.content ?? null));
 	let displayHtml = $derived(bin?.encrypted ? decryptedHtml : (serverHtml ?? null));
-
-	$effect(() => {
-		// Re-run whenever new content lands in the DOM (reveal, decrypt, view switch)
-		displayContent;
-		displayHtml;
-		if (browser && contentEl) hydrateMermaid();
-	});
 
 	let copyOptions = $derived.by(() => {
 		const opts: { label: string; action: () => void }[] = [];
