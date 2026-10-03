@@ -6,7 +6,7 @@
 // directly to produce clean Typst.
 
 import MarkdownIt from 'markdown-it';
-import type { Token } from 'markdown-it/index.js';
+import type { Token } from 'markdown-it';
 import taskLists from 'markdown-it-task-lists';
 import markPlugin from 'markdown-it-mark';
 import footnotePlugin from 'markdown-it-footnote';
@@ -208,7 +208,7 @@ function walkList(items: Token[], ctx: Ctx, ordered: boolean, depth: number): st
 		const open = items[i];
 		const close = matchClose(items, i, 'list_item_close');
 
-		const cls = open.attrGet('class') || '';
+		const cls = String(open.attrGet('class') ?? '');
 		const isTask = cls.includes('task-list-item');
 		let taskState: 'unchecked' | 'checked' | 'cancelled' | null = null;
 		if (isTask) {
@@ -415,7 +415,7 @@ function walkInline(children: Token[], ctx: Ctx): string {
 				out += `#raw("${escapeString(c.content)}")`;
 				break;
 			case 'link_open': {
-				const href = c.attrGet('href') || '';
+				const href = String(c.attrGet('href') ?? '');
 				out += `#link("${escapeString(href)}")[`;
 				stack.push(']');
 				break;
@@ -424,8 +424,8 @@ function walkInline(children: Token[], ctx: Ctx): string {
 				out += stack.pop() ?? ']';
 				break;
 			case 'image': {
-				const src = c.attrGet('src') || '';
-				const alt = c.content || c.attrGet('alt') || '';
+				const src = String(c.attrGet('src') ?? '');
+				const alt = c.content || String(c.attrGet('alt') ?? '');
 				if (src.startsWith('data:image/')) {
 					const key = `img_${ctx.imageCounter++}`;
 					ctx.dataUris[key] = src;

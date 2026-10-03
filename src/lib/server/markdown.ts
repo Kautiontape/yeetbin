@@ -1,4 +1,4 @@
-import MarkdownIt from 'markdown-it';
+import MarkdownIt, { type MarkdownIt as MarkdownItInstance } from 'markdown-it';
 import taskLists from 'markdown-it-task-lists';
 import markPlugin from 'markdown-it-mark';
 import footnotePlugin from 'markdown-it-footnote';
@@ -11,10 +11,10 @@ import { mermaidPlugin } from '$lib/plugins/mermaid.js';
 import { taskStatesPlugin } from '$lib/plugins/task-states.js';
 import { createShikiHighlighter } from './plugins/shiki.js';
 
-let md: MarkdownIt;
+let md: MarkdownItInstance;
 let initialized = false;
 
-async function initMarkdown(): Promise<MarkdownIt> {
+async function initMarkdown(): Promise<MarkdownItInstance> {
 	if (initialized) return md;
 
 	md = new MarkdownIt({

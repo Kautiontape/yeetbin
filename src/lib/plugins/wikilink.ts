@@ -4,7 +4,7 @@
  * Renders [[Page Name]] and [[Page Name|Display Text]] as styled spans.
  * Since there's no vault to link to, they're displayed as non-clickable references.
  */
-import type MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 
 const WIKILINK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 
@@ -38,7 +38,7 @@ export function wikilinkPlugin(md: MarkdownIt): void {
 	md.renderer.rules.wikilink = function (tokens, idx) {
 		const token = tokens[idx];
 		const display = escapeHtml(token.content);
-		const page = escapeHtml(token.meta.page);
+		const page = escapeHtml(String(token.meta?.page ?? ''));
 		return `<span class="yb-wikilink" title="${page}">${display}</span>`;
 	};
 }

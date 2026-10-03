@@ -4,7 +4,7 @@
  * Intercepts fenced code blocks with language "mermaid" and renders them
  * as placeholder divs that get hydrated client-side by Mermaid.js.
  */
-import type MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 
 export function mermaidPlugin(md: MarkdownIt): void {
 	const defaultFence =
