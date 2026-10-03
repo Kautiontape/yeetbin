@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 # better-sqlite3 13 ships no prebuilt binaries; it compiles on install.
 RUN apk add --no-cache python3 make g++
@@ -15,7 +15,7 @@ RUN mkdir -p /data && pnpm build
 # ---
 
 # Production deps compile here so the final image carries no toolchain.
-FROM node:22-alpine AS prod-deps
+FROM node:24-alpine AS prod-deps
 
 RUN apk add --no-cache python3 make g++
 RUN corepack enable && corepack prepare pnpm@9 --activate
@@ -27,7 +27,7 @@ RUN pnpm install --frozen-lockfile --prod
 
 # ---
 
-FROM node:22-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
