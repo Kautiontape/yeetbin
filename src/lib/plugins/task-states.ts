@@ -10,7 +10,7 @@
  * Must run AFTER markdown-it-task-lists which handles [x] and [ ].
  * Processes remaining list items that start with [X] patterns.
  */
-import type MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 
 const TASK_STATE_RE = /^\[([-/>?!*])\]\s*/;
 

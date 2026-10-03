@@ -9,7 +9,7 @@
  *   > [!note]+ Expanded by default
  *   > [!note]- Collapsed by default
  */
-import type MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 
 // Match [!type] at start of content — no $ anchor, .* stops at first \n
 const CALLOUT_RE = /^\[!(\w+)\]([+-])?\s*(.*)/i;
