@@ -1,6 +1,6 @@
 import { EditorView } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
-import { convertHtmlToMarkdown } from '$lib/utils/html-to-markdown';
+import { convertHtmlToMarkdown } from '#lib/utils/html-to-markdown.js';
 
 const HINT_DURATION = 10_000;
 

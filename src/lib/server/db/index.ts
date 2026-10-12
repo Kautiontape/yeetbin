@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import * as schema from './schema.js';
-import { building } from '$app/environment';
+import { building } from '$app/env';
 
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 

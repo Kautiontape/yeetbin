@@ -4,10 +4,10 @@ import markPlugin from 'markdown-it-mark';
 import footnotePlugin from 'markdown-it-footnote';
 import _katexModule from '@vscode/markdown-it-katex';
 const katexPlugin = (_katexModule as any).default || _katexModule;
-import { calloutPlugin } from '$lib/plugins/callout';
-import { wikilinkPlugin } from '$lib/plugins/wikilink';
-import { mermaidPlugin } from '$lib/plugins/mermaid';
-import { taskStatesPlugin } from '$lib/plugins/task-states';
+import { calloutPlugin } from '#lib/plugins/callout.js';
+import { wikilinkPlugin } from '#lib/plugins/wikilink.js';
+import { mermaidPlugin } from '#lib/plugins/mermaid.js';
+import { taskStatesPlugin } from '#lib/plugins/task-states.js';
 
 const md = new MarkdownIt({
 	html: false,

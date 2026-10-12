@@ -5,10 +5,10 @@ import footnotePlugin from 'markdown-it-footnote';
 import _katexModule from '@vscode/markdown-it-katex';
 // CJS/ESM interop: the actual plugin function is double-nested
 const katexPlugin = (_katexModule as any).default || _katexModule;
-import { calloutPlugin } from '$lib/plugins/callout.js';
-import { wikilinkPlugin } from '$lib/plugins/wikilink.js';
-import { mermaidPlugin } from '$lib/plugins/mermaid.js';
-import { taskStatesPlugin } from '$lib/plugins/task-states.js';
+import { calloutPlugin } from '#lib/plugins/callout.js';
+import { wikilinkPlugin } from '#lib/plugins/wikilink.js';
+import { mermaidPlugin } from '#lib/plugins/mermaid.js';
+import { taskStatesPlugin } from '#lib/plugins/task-states.js';
 import { createShikiHighlighter } from './plugins/shiki.js';
 
 let md: MarkdownItInstance;

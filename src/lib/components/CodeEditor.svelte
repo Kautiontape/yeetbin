@@ -4,9 +4,9 @@
 	import { EditorState, type Extension } from '@codemirror/state';
 	import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 	import { oneDark } from '@codemirror/theme-one-dark';
-	import { theme } from '$lib/stores/theme';
+	import { theme } from '#lib/stores/theme.js';
 	import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
-	import { pasteMarkdownExtension } from '$lib/extensions/paste-markdown';
+	import { pasteMarkdownExtension } from '#lib/extensions/paste-markdown.js';
 
 	interface Props {
 		content?: string;

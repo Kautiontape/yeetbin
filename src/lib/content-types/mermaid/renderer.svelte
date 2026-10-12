@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
-	import { theme } from '$lib/stores/theme';
-	import { markExpandable } from '$lib/components/MermaidLightbox.svelte';
+	import { browser } from '$app/env';
+	import { theme } from '#lib/stores/theme.js';
+	import { markExpandable } from '#lib/components/MermaidLightbox.svelte';
 
 	interface Props {
 		content: string;

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import ThemeToggle from './ThemeToggle.svelte';
-	import { getContentTypeList, getContentType } from '$lib/content-types/registry';
-	import { clearDraft } from '$lib/utils/draft';
-	import { detectFromFilename } from '$lib/utils/detect-type';
+	import { getContentTypeList, getContentType } from '#lib/content-types/registry.js';
+	import { clearDraft } from '#lib/utils/draft.js';
+	import { detectFromFilename } from '#lib/utils/detect-type.js';
 
 	interface Props {
 		showTypeSelector?: boolean;

@@ -1,8 +1,8 @@
 import { error, redirect } from '@sveltejs/kit';
-import { db } from '$lib/server/db/index.js';
-import { bins } from '$lib/server/db/schema.js';
+import { db } from '#lib/server/db/index.js';
+import { bins } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { generateId } from '$lib/server/id.js';
+import { generateId } from '#lib/server/id.js';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {

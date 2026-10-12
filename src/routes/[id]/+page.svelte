@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { applyAction, enhance } from '$app/forms';
-	import { invalidateAll, beforeNavigate } from '$app/navigation';
+	import { refreshAll, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
-	import Header from '$lib/components/Header.svelte';
-	import ContentPreview from '$lib/components/ContentPreview.svelte';
-	import CopyButton from '$lib/components/CopyButton.svelte';
-	import DownloadPdfButton from '$lib/components/DownloadPdfButton.svelte';
-	import PrintButton from '$lib/components/PrintButton.svelte';
-	import { decrypt } from '$lib/utils/crypto';
-	import { renderMarkdown } from '$lib/content-types/markdown/client-render';
+	import Header from '#lib/components/Header.svelte';
+	import ContentPreview from '#lib/components/ContentPreview.svelte';
+	import CopyButton from '#lib/components/CopyButton.svelte';
+	import DownloadPdfButton from '#lib/components/DownloadPdfButton.svelte';
+	import PrintButton from '#lib/components/PrintButton.svelte';
+	import { decrypt } from '#lib/utils/crypto.js';
+	import { renderMarkdown } from '#lib/content-types/markdown/client-render.js';
 	import type { PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: any } = $props();
@@ -34,7 +34,7 @@
 	// After successful unlock, reload the page data
 	$effect(() => {
 		if (form?.unlocked) {
-			invalidateAll();
+			refreshAll();
 		}
 	});
 

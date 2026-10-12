@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 const KEY = 'yeetbin-draft';
 const MAX_BYTES = 2_000_000;

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { enhance } from '$app/forms';
-	import Header from '$lib/components/Header.svelte';
-	import CodeEditor from '$lib/components/CodeEditor.svelte';
-	import ContentPreview from '$lib/components/ContentPreview.svelte';
-	import CopyButton from '$lib/components/CopyButton.svelte';
-	import DownloadPdfButton from '$lib/components/DownloadPdfButton.svelte';
-	import PrintButton from '$lib/components/PrintButton.svelte';
-	import { defaultEditMode } from '$lib/utils/responsive';
+	import Header from '#lib/components/Header.svelte';
+	import CodeEditor from '#lib/components/CodeEditor.svelte';
+	import ContentPreview from '#lib/components/ContentPreview.svelte';
+	import CopyButton from '#lib/components/CopyButton.svelte';
+	import DownloadPdfButton from '#lib/components/DownloadPdfButton.svelte';
+	import PrintButton from '#lib/components/PrintButton.svelte';
+	import { defaultEditMode } from '#lib/utils/responsive.js';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();

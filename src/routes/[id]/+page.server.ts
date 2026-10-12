@@ -1,8 +1,8 @@
 import { error } from '@sveltejs/kit';
-import { db } from '$lib/server/db/index.js';
-import { bins } from '$lib/server/db/schema.js';
+import { db } from '#lib/server/db/index.js';
+import { bins } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { serverRenderContent } from '$lib/server/render.js';
+import { serverRenderContent } from '#lib/server/render.js';
 import bcrypt from 'bcryptjs';
 import type { PageServerLoad, Actions } from './$types';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
-	import { theme } from '$lib/stores/theme';
-	import { browser } from '$app/environment';
+	import { theme } from '#lib/stores/theme.js';
+	import { browser } from '$app/env';
 
 	let { children } = $props();
 
@@ -24,7 +24,7 @@
 		};
 		let cancel: () => void;
 		const run = () => {
-			import('$lib/utils/typst-pdf').catch(() => {
+			import('#lib/utils/typst-pdf/index.js').catch(() => {
 				// Silent — this is a prefetch. Real failures surface on click.
 			});
 		};

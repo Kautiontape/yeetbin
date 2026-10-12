@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { inferPdfFilename } from '$lib/utils/pdf-filename';
+	import { inferPdfFilename } from '#lib/utils/pdf-filename.js';
 
 	interface Props {
 		getContent: () => string | null | undefined;
@@ -29,7 +29,7 @@
 		busy = true;
 		error = '';
 		try {
-			const { generatePdf, downloadPdf } = await import('$lib/utils/typst-pdf');
+			const { generatePdf, downloadPdf } = await import('#lib/utils/typst-pdf/index.js');
 			const bytes = await generatePdf({
 				content,
 				type: getType(),

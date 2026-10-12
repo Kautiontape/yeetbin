@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { browser } from '$app/environment';
-	import { renderMarkdown } from '$lib/content-types/markdown/client-render';
-	import { theme } from '$lib/stores/theme';
+	import { browser } from '$app/env';
+	import { renderMarkdown } from '#lib/content-types/markdown/client-render.js';
+	import { theme } from '#lib/stores/theme.js';
 	import MermaidLightbox, { markExpandable } from './MermaidLightbox.svelte';
 
 	interface Props {
@@ -142,12 +142,16 @@
 			{@html renderedHtml || markdownHtml}
 		</div>
 	{:else if type === 'mermaid'}
-		{#await import('$lib/content-types/mermaid/renderer.svelte') then mod}
-			<mod.default {content} />
+		{#await import('#lib/content-types/mermaid/renderer.svelte') then mod}
+			<mod.default content={content} />
 		{/await}
 	{:else if type === 'code'}
-		{#await import('$lib/content-types/code/renderer.svelte') then mod}
-			<mod.default {content} {renderedHtml} {language} />
+		{#await import('#lib/content-types/code/renderer.svelte') then mod}
+			<mod.default
+				content={content}
+				renderedHtml={renderedHtml}
+				language={language}
+			/>
 		{/await}
 	{:else}
 		<pre class="yb-text">{content}</pre>
@@ -155,5 +159,8 @@
 </div>
 
 {#if lightboxSvg}
-	<MermaidLightbox source={lightboxSvg} onclose={() => (lightboxSvg = null)} />
+	<MermaidLightbox
+		source={lightboxSvg}
+		onclose={() => lightboxSvg = null}
+	/>
 {/if}

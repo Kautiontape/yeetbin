@@ -1,7 +1,6 @@
-import { json } from '@sveltejs/kit';
-import { db } from '$lib/server/db/index.js';
-import { bins } from '$lib/server/db/schema.js';
-import { generateId } from '$lib/server/id.js';
+import { db } from '#lib/server/db/index.js';
+import { bins } from '#lib/server/db/schema.js';
+import { generateId } from '#lib/server/id.js';
 import bcrypt from 'bcryptjs';
 import type { RequestHandler } from './$types';
 
@@ -19,7 +18,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	} = body;
 
 	if (!content?.trim()) {
-		return json({ error: 'Content is required' }, { status: 400 });
+		return Response.json({ error: 'Content is required' }, { status: 400 });
 	}
 
 	const id = await generateId();
@@ -46,5 +45,5 @@ export const POST: RequestHandler = async ({ request }) => {
 		})
 		.run();
 
-	return json({ id, url: `/${id}` }, { status: 201 });
+	return Response.json({ id, url: `/${id}` }, { status: 201 });
 };

@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 type Theme = 'light' | 'dark';
 
@@ -20,5 +20,5 @@ if (browser) {
 }
 
 export function toggleTheme(): void {
-	theme.update((t) => (t === 'dark' ? 'light' : 'dark'));
+	theme.update((t) => t === 'dark' ? 'light' : 'dark');
 }

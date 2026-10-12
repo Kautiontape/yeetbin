@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
-import { db } from '$lib/server/db/index.js';
-import { bins } from '$lib/server/db/schema.js';
-import { generateId } from '$lib/server/id.js';
+import { db } from '#lib/server/db/index.js';
+import { bins } from '#lib/server/db/schema.js';
+import { generateId } from '#lib/server/id.js';
 import bcrypt from 'bcryptjs';
 import type { Actions } from './$types';
 

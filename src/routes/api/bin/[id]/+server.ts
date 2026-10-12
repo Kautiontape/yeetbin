@@ -1,6 +1,6 @@
-import { json, error } from '@sveltejs/kit';
-import { db } from '$lib/server/db/index.js';
-import { bins } from '$lib/server/db/schema.js';
+import { error } from '@sveltejs/kit';
+import { db } from '#lib/server/db/index.js';
+import { bins } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
@@ -20,7 +20,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		db.delete(bins).where(eq(bins.id, params.id)).run();
 	}
 
-	return json({
+	return Response.json({
 		id: bin.id,
 		content: bin.content,
 		type: bin.type,
@@ -53,7 +53,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	const { content } = body;
 
 	if (!content?.trim()) {
-		return json({ error: 'Content is required' }, { status: 400 });
+		return Response.json({ error: 'Content is required' }, { status: 400 });
 	}
 
 	const now = new Date().toISOString();
@@ -62,7 +62,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		.where(eq(bins.id, params.id))
 		.run();
 
-	return json({ id: bin.id, updated: true });
+	return Response.json({ id: bin.id, updated: true });
 };
 
 export const DELETE: RequestHandler = async ({ params }) => {
@@ -74,5 +74,5 @@ export const DELETE: RequestHandler = async ({ params }) => {
 
 	db.delete(bins).where(eq(bins.id, params.id)).run();
 
-	return json({ deleted: true });
+	return Response.json({ deleted: true });
 };

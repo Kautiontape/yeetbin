@@ -1,6 +1,6 @@
-import { error, text } from '@sveltejs/kit';
-import { db } from '$lib/server/db/index.js';
-import { bins } from '$lib/server/db/schema.js';
+import { error } from '@sveltejs/kit';
+import { db } from '#lib/server/db/index.js';
+import { bins } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import type { RequestHandler } from './$types';
@@ -64,7 +64,7 @@ export const GET: RequestHandler = async ({ params, url, request, cookies }) => 
 		db.delete(bins).where(eq(bins.id, params.id)).run();
 	}
 
-	return text(bin.content, {
+	return new Response(bin.content, {
 		headers: { 'content-type': 'text/plain; charset=utf-8' }
 	});
 };

@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import Header from '$lib/components/Header.svelte';
-	import CodeEditor from '$lib/components/CodeEditor.svelte';
-	import ContentPreview from '$lib/components/ContentPreview.svelte';
-	import CopyButton from '$lib/components/CopyButton.svelte';
-	import DownloadPdfButton from '$lib/components/DownloadPdfButton.svelte';
-	import PrintButton from '$lib/components/PrintButton.svelte';
-	import { encrypt } from '$lib/utils/crypto';
-	import { defaultEditMode } from '$lib/utils/responsive';
-	import { loadDraft, saveDraft, clearDraft } from '$lib/utils/draft';
+	import Header from '#lib/components/Header.svelte';
+	import CodeEditor from '#lib/components/CodeEditor.svelte';
+	import ContentPreview from '#lib/components/ContentPreview.svelte';
+	import CopyButton from '#lib/components/CopyButton.svelte';
+	import DownloadPdfButton from '#lib/components/DownloadPdfButton.svelte';
+	import PrintButton from '#lib/components/PrintButton.svelte';
+	import { encrypt } from '#lib/utils/crypto.js';
+	import { defaultEditMode } from '#lib/utils/responsive.js';
+	import { loadDraft, saveDraft, clearDraft } from '#lib/utils/draft.js';
 
 	const initialDraft = loadDraft();
 
