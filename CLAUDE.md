@@ -9,6 +9,7 @@ pnpm dev        # Start dev server on :5173
 pnpm build      # Build for production
 pnpm preview    # Preview production build
 pnpm check      # TypeScript check
+pnpm build:extension  # Build the local-yeetbin browser extension into extension/dist
 ```
 
 ## Database
@@ -35,3 +36,4 @@ pnpm db:migrate   # Run migrations
 - Server-only code in `src/lib/server/`
 - SSR markdown rendering for reader views
 - API at `/api/bin/` for programmatic access
+- `extension/`: MV3 browser extension (local yeetbin) built by its own Vite config. It imports `src/lib` directly, including `src/lib/server/render.ts`, so keep that renderer free of Node-only APIs. See `extension/README.md`.
