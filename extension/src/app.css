@@ -1,0 +1,14 @@
+@import '../../src/app.css';
+
+/* Tailwind only generates classes it sees; point it at the shared components and these pages. */
+@source '../../src/lib';
+@source '../src';
+@source '../index.html';
+
+/* Chromium styles every extension page with `body { font-size: 75%; font-family: <UI font> }`,
+   which made local bins render at 12px in the system UI font. Hand both back to <html>, where
+   Tailwind's preflight sets them, as on the website. Unlayered and `html body` so it wins. */
+html body {
+	font-size: 100%;
+	font-family: inherit;
+}

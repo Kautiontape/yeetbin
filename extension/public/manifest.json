@@ -1,0 +1,31 @@
+{
+	"manifest_version": 3,
+	"name": "yeetbin (local)",
+	"short_name": "yeetbin",
+	"version": "0.1.0",
+	"description": "Read markdown, code and diagrams with yeetbin's renderer without uploading them. Publish to yeetbin only when you choose.",
+	"key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmbrs7f56bXCZJvLhd7GLAZycXCFWEfHvNJcV7gPZC7x87gldGjHD5GV/D0qVLFvRO67oH6ZwZYzUvr+cwfTo+nBuPMuyqtPQ7BZsWeHZYRNVoreY/qgjUyPZB6iR0qh+XrYNV65hw95+lighpu/Cuky+wjphomMD9WAviKvdk1KMUtNa/uaXABdUuLu4uqvqOArQxkENivOHVadjWeRlb7umoe465d0b2nB+tlsUN/8jgOWlqlBZwJQRRapDZWZhZKR7KV/D9vvDj+/1IA3kcMrY2QKOKlT0jLvDYbV6pPutLbaIBlaHi5/jxjO9DG8+auCMUSafYjgADI1/uAZnqwIDAQAB",
+	"minimum_chrome_version": "116",
+	"icons": {
+		"16": "icons/icon-16.png",
+		"32": "icons/icon-32.png",
+		"48": "icons/icon-48.png",
+		"128": "icons/icon-128.png"
+	},
+	"action": {
+		"default_title": "Local yeetbin",
+		"default_icon": {
+			"16": "icons/icon-16.png",
+			"32": "icons/icon-32.png"
+		}
+	},
+	"background": {
+		"service_worker": "background.js",
+		"type": "module"
+	},
+	"permissions": ["nativeMessaging", "unlimitedStorage", "alarms"],
+	"host_permissions": ["https://yeet.kautiontape.com/*"],
+	"content_security_policy": {
+		"extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+	}
+}
